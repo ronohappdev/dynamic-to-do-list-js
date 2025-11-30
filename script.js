@@ -1,78 +1,110 @@
+// Run script after HTML is fully loaded
 document.addEventListener("DOMContentLoaded", function () {
-	// Select DOM elements
-	const addButton = document.getElementById("add-task-btn");
-	const taskInput = document.getElementById("task-input");
-	const taskList = document.getElementById("task-list");
 
-	// Function to load tasks from Local Storage
-	function loadTasks() {
-    	const storedTasks = JSON.parse(localStorage.getItem("tasks") || "[]");
-    	storedTasks.forEach((taskText) => addTask(taskText, false)); // 'false' prevents duplicate saving
-	}
+    // ------------------------------
+    // Select DOM Elements
+    // ------------------------------
+    const addButton = document.getElementById("add-task-btn");
+    const taskInput = document.getElementById("task-input");
+    const taskList = document.getElementById("task-list");
 
-	// Function to add a new task
-	function addTask(taskText, save = true) {
-    	// Check if taskText is empty (only for manual input)
-    	if (!taskText.trim()) {
-        	alert("Please enter a task.");
-        	return;
-    	}
+    // In-memory tasks array
+    let tasks = [];
 
-    	// Create a new list item (li)
-    	const taskItem = document.createElement("li");
-    	taskItem.textContent = taskText; // Set the task text
+    // ------------------------------
+    // Save tasks to Local Storage
+    // ------------------------------
+    function saveTasks() {
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
 
-    	// Create a remove button for the task
-    	const removeButton = document.createElement("button");
-    	removeButton.textContent = "Remove";
-    	removeButton.className = "remove-btn";
+    // ------------------------------
+    // Load tasks from Local Storage
+    // ------------------------------
+    function loadTasks() {
+        const storedTasks = JSON.parse(localStorage.getItem("tasks") || "[]");
 
-    	// Attach an event to the remove button to delete the task
-    	removeButton.onclick = function () {
-        	taskList.removeChild(taskItem);
-        	removeTaskFromLocalStorage(taskText);
-    	};
+        tasks = storedTasks;
 
-    	// Append the remove button to the list item
-    	taskItem.appendChild(removeButton);
+        // Create each saved task in the DOM
+        tasks.forEach(taskText => {
+            createTaskElement(taskText);
+        });
+    }
 
-    	// Add the list item to the task list
-    	taskList.appendChild(taskItem);
+    // ------------------------------
+    // Create task <li> element in DOM
+    // ------------------------------
+    function createTaskElement(taskText) {
+        const li = document.createElement("li");
 
-    	// Save task to Local Storage if 'save' is true
-    	if (save) {
-        	saveTaskToLocalStorage(taskText);
-    	}
-	}
+        // Set text content (required by project)
+        li.textContent = taskText;
 
-	// Function to save a task to Local Storage
-	function saveTaskToLocalStorage(taskText) {
-    	const storedTasks = JSON.parse(localStorage.getItem("tasks") || "[]");
-    	storedTasks.push(taskText);
-    	localStorage.setItem("tasks", JSON.stringify(storedTasks));
-	}
+        // Create remove button
+        const removeBtn = document.createElement("button");
+        removeBtn.textContent = "Remove";
+        removeBtn.className = "remove-btn";
 
-	// Function to remove a task from Local Storage
-	function removeTaskFromLocalStorage(taskText) {
-    	const storedTasks = JSON.parse(localStorage.getItem("tasks") || "[]");
-    	const updatedTasks = storedTasks.filter((task) => task !== taskText);
-    	localStorage.setItem("tasks", JSON.stringify(updatedTasks));
-	}
+        // Required: use onclick to remove task
+        removeBtn.onclick = function () {
+            // Remove from DOM
+            taskList.removeChild(li);
 
-	// Attach event listener to the "Add Task" button
-	addButton.addEventListener("click", function () {
-    	addTask(taskInput.value);
-    	taskInput.value = ""; // Clear the input field
-	});
+            // Remove from array
+            tasks = tasks.filter(text => text !== taskText);
 
-	// Attach event listener to the input field for the 'Enter' key
-	taskInput.addEventListener("keypress", function (event) {
-    	if (event.key === "Enter") {
-        	addTask(taskInput.value);
-        	taskInput.value = ""; // Clear the input field
-    	}
-	});
+            // Update Local Storage
+            saveTasks();
+        };
 
-	// Load tasks from Local Storage on page load
-	loadTasks();
+        // Append button and li
+        li.appendChild(removeBtn);
+        taskList.appendChild(li);
+    }
+
+    // ------------------------------
+    // addTask Function (must contain taskInput.value.trim())
+    // ------------------------------
+    function addTask() {
+        // REQUIRED: retrieve + trim input this exact way
+        const taskText = taskInput.value.trim();
+
+        if (taskText === "") {
+            alert("Please enter a task.");
+            return;
+        }
+
+        // Add to array
+        tasks.push(taskText);
+
+        // Save to localStorage
+        saveTasks();
+
+        // Add to DOM
+        createTaskElement(taskText);
+
+        // Clear input
+        taskInput.value = "";
+    }
+
+    // ------------------------------
+    // Event Listeners
+    // ------------------------------
+
+    // Button click → add task
+    addButton.addEventListener("click", addTask);
+
+    // Press Enter → add task
+    taskInput.addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+            addTask();
+        }
+    });
+
+    // ------------------------------
+    // Load saved tasks when page opens
+    // ------------------------------
+    loadTasks();
 });
+
