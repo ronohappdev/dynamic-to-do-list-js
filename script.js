@@ -23,10 +23,9 @@ document.addEventListener("DOMContentLoaded", function () {
     // ------------------------------
     function loadTasks() {
         const storedTasks = JSON.parse(localStorage.getItem("tasks") || "[]");
-
         tasks = storedTasks;
 
-        // Create each saved task in the DOM
+        // Create each saved task in DOM
         tasks.forEach(taskText => {
             createTaskElement(taskText);
         });
@@ -38,37 +37,35 @@ document.addEventListener("DOMContentLoaded", function () {
     function createTaskElement(taskText) {
         const li = document.createElement("li");
 
-        // Set text content (required by project)
+        // Set text content
         li.textContent = taskText;
 
         // Create remove button
         const removeBtn = document.createElement("button");
         removeBtn.textContent = "Remove";
-        removeBtn.className = "remove-btn";
+        removeBtn.className = "remove-btn"; // STILL allowed, NOT classList.add
 
-        // Required: use onclick to remove task
+        // Required: use onclick to remove
         removeBtn.onclick = function () {
-            // Remove from DOM
             taskList.removeChild(li);
 
             // Remove from array
             tasks = tasks.filter(text => text !== taskText);
 
-            // Update Local Storage
+            // Save updated tasks
             saveTasks();
         };
 
-        // Append button and li
+        // Append button and task
         li.appendChild(removeBtn);
         taskList.appendChild(li);
     }
 
     // ------------------------------
-    // addTask Function (must contain taskInput.value.trim())
+    // addTask Function
     // ------------------------------
     function addTask() {
-        // REQUIRED: retrieve + trim input this exact way
-        const taskText = taskInput.value.trim();
+        const taskText = taskInput.value.trim(); // REQUIRED
 
         if (taskText === "") {
             alert("Please enter a task.");
@@ -78,10 +75,10 @@ document.addEventListener("DOMContentLoaded", function () {
         // Add to array
         tasks.push(taskText);
 
-        // Save to localStorage
+        // Save to storage
         saveTasks();
 
-        // Add to DOM
+        // Create in DOM
         createTaskElement(taskText);
 
         // Clear input
@@ -91,20 +88,14 @@ document.addEventListener("DOMContentLoaded", function () {
     // ------------------------------
     // Event Listeners
     // ------------------------------
-
-    // Button click → add task
     addButton.addEventListener("click", addTask);
 
-    // Press Enter → add task
     taskInput.addEventListener("keypress", function (event) {
         if (event.key === "Enter") {
             addTask();
         }
     });
 
-    // ------------------------------
-    // Load saved tasks when page opens
-    // ------------------------------
+    // Load tasks on startup
     loadTasks();
 });
-
